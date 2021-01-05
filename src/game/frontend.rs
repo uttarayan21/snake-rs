@@ -1,5 +1,8 @@
 // use ncurses::*;
-use ncurses::{box_, delwin, keypad, newwin, wborder, wrefresh, WINDOW};
+use crate::game::backend::Snake;
+use ncurses::{
+    box_, delwin, keypad, mvwaddstr, newwin, wborder, wclrtobot, wmove, wrefresh, WINDOW,
+};
 pub fn game_window(mlines: i32, mcols: i32, vmargin: i32, hmargin: i32) -> WINDOW {
     let game_win: WINDOW;
     let (lines, cols): (i32, i32);
@@ -18,9 +21,19 @@ pub fn game_window(mlines: i32, mcols: i32, vmargin: i32, hmargin: i32) -> WINDO
 }
 
 pub fn destroy_window(win: WINDOW) {
-    // wmove(win, 0, 0);
-    // wclrtobot(win);
+    wmove(win, 0, 0);
+    wclrtobot(win);
     wborder(win, 32, 32, 32, 32, 32, 32, 32, 32); // 32 is the ascii code for whitespace. this replaces all the window borders with whitespace
     wrefresh(win); // refresh to remove the borders
     delwin(win); // delete the window
+}
+
+pub fn draw_snake(snake: &mut Snake, game_win: WINDOW) {
+    let mut snake_iter = snake.body.iter();
+    for snake_cell in snake_iter.next() {
+        wmove(game_win, 0, 0);
+        wclrtobot(game_win);
+        box_(game_win, 0, 0);
+        mvwaddstr(game_win, snake_cell.line, snake_cell.col, "x");
+    }
 }
