@@ -15,7 +15,7 @@ fn main() {
     loop {
         match menu::main_menu_control() {
             0 => game::start(),
-            1 => game::start(),
+            1 => (),
             _ => break,
         }
     }

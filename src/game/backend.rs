@@ -1,4 +1,5 @@
 extern crate rand;
+use rand::Rng;
 use std::collections::LinkedList;
 pub enum Direction {
     Up,
@@ -18,8 +19,8 @@ pub enum CellType {
     Empty,
 }
 pub struct Cell {
-    pub line: i32,
-    pub col: i32,
+    line: i32,
+    col: i32,
     ctype: CellType,
 }
 
@@ -30,6 +31,20 @@ impl Cell {
             col: c,
             ctype: t,
         }
+    }
+    pub fn random(lines: i32, cols: i32) -> Cell {
+        let mut rng = rand::thread_rng();
+        Cell::new(
+            rng.gen_range(0..lines),
+            rng.gen_range(0..cols),
+            CellType::Food,
+        )
+    }
+    pub fn posyx(&self) -> (i32, i32) {
+        return (self.line, self.col);
+    }
+    pub fn chtype(&mut self, ctype: CellType) {
+        self.ctype = ctype;
     }
 }
 
@@ -46,11 +61,69 @@ impl Clone for Cell {
     }
 }
 
+enum FailState {
+    Wall,
+    // Body,
+}
+
+enum GameState {
+    Failed(FailState),
+    Ready,
+    // Playing,
+}
+
+pub struct Board {
+    maxlines: i32,
+    maxcols: i32,
+    gamestate: GameState,
+    food: Cell,
+}
+
+// impl Board<'_> {
+impl Board {
+    pub fn new(maxlines: i32, maxcols: i32) -> Board {
+        Board {
+            maxlines,
+            maxcols,
+            gamestate: GameState::Ready,
+            food: Cell::random(maxlines, maxcols),
+        }
+    }
+    pub fn check_collision(&mut self, snake: &Snake) -> bool {
+        let (snake_line, snake_col): (i32, i32) = snake.posyx();
+        if (snake_line >= self.maxlines)
+            || (snake_col >= self.maxcols)
+            || (snake_line <= 0)
+            || (snake_col <= 0)
+        {
+            self.gamestate = GameState::Failed(FailState::Wall);
+            return true;
+        }
+        return false;
+    }
+    pub fn check_food(&self, snake: &Snake) -> bool {
+        if self.food_posyx() == snake.posyx() {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    pub fn food_posyx(&self) -> (i32, i32) {
+        return self.food.posyx();
+    }
+    pub fn eat_food(&mut self, snake: &mut Snake) {
+        snake.grow();
+        self.food.chtype(CellType::Empty);
+    }
+    pub fn spawn_food() {}
+}
+
 pub struct Snake {
     head: Cell,
     pub body: LinkedList<Cell>,
-    length: i32,
+    // length: i32,
     pub direction: Direction,
+    grow: bool,
 }
 impl Snake {
     pub fn new(head: Cell) -> Snake {
@@ -59,14 +132,22 @@ impl Snake {
         Snake {
             head,
             body: temp_body,
-            length: 1,
+            // length: 1,
             direction: Direction::Right,
+            grow: false,
         }
     }
-
+    pub fn posyx(&self) -> (i32, i32) {
+        return (self.head.line, self.head.col);
+    }
     pub fn smove(&mut self, direction: Direction) {
         // smove because move is already a keyword
-        let mut tail: Cell = self.body.pop_back().unwrap();
+        let mut tail: Cell;
+        if self.grow {
+            tail = self.body.back().unwrap().clone();
+        } else {
+            tail = self.body.pop_back().unwrap();
+        }
         tail.ctype = CellType::Empty;
         let (dl, dc) = match direction {
             Direction::Up => (-1, 0),
@@ -77,5 +158,11 @@ impl Snake {
         self.direction = direction;
         self.head = Cell::new(self.head.line + dl, self.head.col + dc, CellType::Snake);
         self.body.push_front(self.head);
+    }
+    pub fn tick(&mut self) {
+        self.smove(self.direction);
+    }
+    pub fn grow(&mut self) {
+        self.grow = true;
     }
 }

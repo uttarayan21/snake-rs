@@ -1,5 +1,5 @@
 // use ncurses::*;
-use crate::game::backend::Snake;
+use crate::game::backend::{Board, Snake};
 use ncurses::{
     box_, delwin, keypad, mvwaddstr, newwin, wborder, wclrtobot, wmove, wrefresh, WINDOW,
 };
@@ -28,12 +28,18 @@ pub fn destroy_window(win: WINDOW) {
     delwin(win); // delete the window
 }
 
-pub fn draw_snake(snake: &mut Snake, game_win: WINDOW) {
+pub fn draw_snake(snake: &Snake, game_win: WINDOW) {
     let mut snake_iter = snake.body.iter();
     for snake_cell in snake_iter.next() {
         wmove(game_win, 0, 0);
         wclrtobot(game_win);
         box_(game_win, 0, 0);
-        mvwaddstr(game_win, snake_cell.line, snake_cell.col, "x");
+        let (snake_l, snake_c): (i32, i32) = snake_cell.posyx();
+        mvwaddstr(game_win, snake_l, snake_c, "x");
     }
+}
+
+pub fn draw_board(board: &Board, game_win: WINDOW) {
+    let (food_l, food_c): (i32, i32) = board.food_posyx();
+    mvwaddstr(game_win, food_l, food_c, "F");
 }
