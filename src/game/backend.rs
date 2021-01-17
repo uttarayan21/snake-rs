@@ -69,8 +69,8 @@ impl Cell {
     pub fn random(lines: i32, cols: i32) -> Cell {
         let mut rng = rand::thread_rng();
         Cell::new(
-            rng.gen_range(0..lines),
-            rng.gen_range(0..cols),
+            rng.gen_range(1..lines),
+            rng.gen_range(1..cols),
             CellType::Food,
         )
     }
@@ -127,8 +127,8 @@ impl Board {
         let (snake_line, snake_col): (i32, i32) = snake.posyx();
         if (snake_line >= self.maxlines)
             || (snake_col >= self.maxcols)
-            || (snake_line <= 0)
-            || (snake_col <= 0)
+            || (snake_line < 0)
+            || (snake_col < 0)
         {
             self.gamestate = GameState::Failed(FailState::Wall);
             return true;
@@ -175,7 +175,7 @@ pub struct Snake {
     head: Cell,
     body: LinkedList<Cell>,
     direction: Direction,
-    pub grow: bool,
+    grow: bool,
 }
 impl Snake {
     pub fn new(head: Cell) -> Snake {

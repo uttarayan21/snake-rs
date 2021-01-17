@@ -37,10 +37,14 @@ pub fn start() {
                 nodelay(game_win, false);
                 match menu::pause_menu_control() {
                     //112 is keycode for 'p'
-                    0 => (),    //resume
-                    1 => (),    //restart
+                    0 => (), //resume
+                    1 => {
+                        snake =
+                            Snake::new(Cell::new(mlines / 2, mcols / 2, backend::CellType::Snake)); //Initialise snake in the middle of the screen
+                        board = Board::new(mlines - vmargin * 2, mcols - hmargin * 2);
+                    } //restart
                     2 => break, //exit
-                    _ => (),    //other charachters just in case
+                    _ => (), //other charachters just in case
                 }
                 wrefresh(game_win);
                 nodelay(game_win, true);

@@ -52,18 +52,15 @@ pub fn log(snake: &Snake, board: &Board) {
     mvwaddstr(stdscr(), 0, 0, &format!("snake:head: {} {} ", shl, shc));
     mvwaddstr(stdscr(), 1, 0, &format!("board:food: {} {} ", bfl, bfc));
     wmove(stdscr(), 2, 0);
-    for snake_cell in snake.iter() {
-        let (scl, scc): (i32, i32) = snake_cell.posyx();
-        waddstr(stdscr(), &format!("cell: {} {} ", scl, scc));
-    }
+    // for snake_cell in snake.iter() {
+    //     let (scl, scc): (i32, i32) = snake_cell.posyx();
+    //     waddstr(stdscr(), &format!("cell: {} {} ", scl, scc));
+    // }
     // mvwaddstr(
     //     stdscr(),
     //     2,
     //     0,
     //     &format!("snake_size {}", snake.iter().size_hint().0),
     // );
-    if snake.grow {
-        mvwaddstr(stdscr(), 3, 0, &format!("snake:grew"));
-    }
     wrefresh(stdscr());
 }

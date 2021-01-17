@@ -1,5 +1,6 @@
 extern crate ncurses;
 mod game;
+mod highscore;
 mod menu;
 // use game::{Cell, Snake};
 // use ncurses::*;
@@ -15,7 +16,7 @@ fn main() {
     loop {
         match menu::main_menu_control() {
             0 => game::start(),
-            1 => (),
+            1 => highscore::show(),
             _ => break,
         }
     }
