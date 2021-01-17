@@ -1,6 +1,9 @@
 extern crate rand;
+use core::iter::Iterator;
 use rand::Rng;
 use std::collections::LinkedList;
+use std::thread::sleep;
+use std::time::Duration;
 pub enum Direction {
     Up,
     Down,
@@ -13,6 +16,29 @@ impl Clone for Direction {
         *self
     }
 }
+impl PartialEq for Direction {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (&Self::Up, &Self::Up) => true,
+            (&Self::Down, &Self::Down) => true,
+            (&Self::Left, &Self::Left) => true,
+            (&Self::Right, &Self::Right) => true,
+            _ => false,
+        }
+    }
+}
+
+impl Direction {
+    fn opposite(&self) -> Self {
+        match *self {
+            Direction::Up => Direction::Down,
+            Direction::Down => Direction::Up,
+            Direction::Left => Direction::Right,
+            Direction::Right => Direction::Left,
+        }
+    }
+}
+
 pub enum CellType {
     Food,
     Snake,
@@ -23,7 +49,15 @@ pub struct Cell {
     col: i32,
     ctype: CellType,
 }
-
+impl PartialEq for Cell {
+    fn eq(&self, other: &Cell) -> bool {
+        if (self.line == other.line) && (self.col == other.col) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
 impl Cell {
     pub fn new(l: i32, c: i32, t: CellType) -> Cell {
         Cell {
@@ -113,17 +147,35 @@ impl Board {
     }
     pub fn eat_food(&mut self, snake: &mut Snake) {
         snake.grow();
-        self.food.chtype(CellType::Empty);
+        // self.food.chtype(CellType::Empty);
+        self.spawn_food(snake);
     }
-    pub fn spawn_food() {}
+    pub fn spawn_food(&mut self, snake: &Snake) {
+        let mut food: Cell = Cell::random(self.maxlines, self.maxcols);
+        let mut spawned_food = false;
+        while spawned_food != true {
+            // check for colliosions with the snake body until a free spot is found and spawn the food there
+            spawned_food = true;
+            let mut snake_iter = snake.iter();
+            for snake_cell in snake_iter.next() {
+                if *snake_cell == food {
+                    // if food collides with the snake body then set food to a new random position and set spawned food to false
+                    // so that the snake_iter is started again from the front of the snake
+                    food = Cell::random(self.maxlines, self.maxcols);
+                    spawned_food = false;
+                    break;
+                }
+            }
+        }
+        self.food = food;
+    }
 }
 
 pub struct Snake {
     head: Cell,
-    pub body: LinkedList<Cell>,
-    // length: i32,
-    pub direction: Direction,
-    grow: bool,
+    body: LinkedList<Cell>,
+    direction: Direction,
+    pub grow: bool,
 }
 impl Snake {
     pub fn new(head: Cell) -> Snake {
@@ -140,15 +192,20 @@ impl Snake {
     pub fn posyx(&self) -> (i32, i32) {
         return (self.head.line, self.head.col);
     }
-    pub fn smove(&mut self, direction: Direction) {
+    pub fn smove(&mut self, _direction: Direction) {
         // smove because move is already a keyword
         let mut tail: Cell;
-        if self.grow {
-            tail = self.body.back().unwrap().clone();
+        let direction: Direction;
+        if self.direction == _direction.opposite() {
+            direction = self.direction
         } else {
-            tail = self.body.pop_back().unwrap();
+            direction = _direction
         }
-        tail.ctype = CellType::Empty;
+        if self.grow == false {
+            tail = self.body.pop_back().unwrap();
+            tail.chtype(CellType::Empty);
+            // self.grow = false;
+        }
         let (dl, dc) = match direction {
             Direction::Up => (-1, 0),
             Direction::Down => (1, 0),
@@ -158,11 +215,16 @@ impl Snake {
         self.direction = direction;
         self.head = Cell::new(self.head.line + dl, self.head.col + dc, CellType::Snake);
         self.body.push_front(self.head);
+        self.grow = false;
     }
-    pub fn tick(&mut self) {
+    pub fn tick(&mut self, time: Duration) {
+        sleep(time);
         self.smove(self.direction);
     }
     pub fn grow(&mut self) {
         self.grow = true;
+    }
+    pub fn iter(&self) -> impl Iterator<Item = &Cell> {
+        return self.body.iter();
     }
 }

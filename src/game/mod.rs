@@ -6,19 +6,20 @@ use backend::{Board, Cell, Snake};
 use ncurses::{
     getmaxyx, nodelay, stdscr, wgetch, wrefresh, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_UP, WINDOW,
 };
-use std::thread::sleep;
 pub fn start() {
     let (mut mlines, mut mcols): (i32, i32) = (0, 0);
     let game_win: WINDOW;
     let mut ch: i32;
+    let (vmargin, hmargin): (i32, i32) = (5, 10);
     getmaxyx(stdscr(), &mut mlines, &mut mcols);
-    game_win = frontend::game_window(mlines, mcols, 5, 10);
+    game_win = frontend::game_window(mlines, mcols, vmargin, hmargin);
     let mut snake = Snake::new(Cell::new(mlines / 2, mcols / 2, backend::CellType::Snake)); //Initialise snake in the middle of the screen
-    let mut board = Board::new(mlines, mcols);
+    let mut board = Board::new(mlines - vmargin * 2, mcols - hmargin * 2);
     nodelay(game_win, true);
     loop {
         frontend::draw_snake(&snake, game_win);
         frontend::draw_board(&board, game_win);
+        frontend::log(&snake, &board);
         if board.check_collision(&snake) {
             break;
         }
@@ -47,8 +48,7 @@ pub fn start() {
             // 27 => break,
             _ => (),
         }
-        sleep(std::time::Duration::from_millis(100));
-        snake.tick();
+        snake.tick(std::time::Duration::from_millis(100));
     }
 
     frontend::destroy_window(game_win);

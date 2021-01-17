@@ -87,7 +87,10 @@ pub fn main_menu_control() -> i8 {
             wattroff(menu_win, A_REVERSE());
             wrefresh(menu_win);
         }
-        mvwaddstr(menu_win, 7, 1, "                  ");
+        // mvwaddstr(menu_win, 7, 1, "                  ");
+        wmove(menu_win, 7, 1);
+        wclrtoeol(menu_win);
+        box_(menu_win, 0, 0);
         mvwaddnstr(menu_win, 7, 1, &menu_desc[menu_highlight], 18);
         mvwaddstr(menu_win, 8, 1, &format!("{}", ch));
         ch = wgetch(menu_win);

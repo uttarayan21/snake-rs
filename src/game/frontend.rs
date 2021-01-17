@@ -1,7 +1,8 @@
 // use ncurses::*;
 use crate::game::backend::{Board, Snake};
 use ncurses::{
-    box_, delwin, keypad, mvwaddstr, newwin, wborder, wclrtobot, wmove, wrefresh, WINDOW,
+    box_, delwin, keypad, mvwaddstr, newwin, stdscr, waddstr, wborder, wclrtobot, wmove, wrefresh,
+    WINDOW,
 };
 pub fn game_window(mlines: i32, mcols: i32, vmargin: i32, hmargin: i32) -> WINDOW {
     let game_win: WINDOW;
@@ -29,17 +30,40 @@ pub fn destroy_window(win: WINDOW) {
 }
 
 pub fn draw_snake(snake: &Snake, game_win: WINDOW) {
-    let mut snake_iter = snake.body.iter();
-    for snake_cell in snake_iter.next() {
-        wmove(game_win, 0, 0);
-        wclrtobot(game_win);
-        box_(game_win, 0, 0);
+    // let mut snake_iter = snake.iter();
+    wmove(game_win, 0, 0);
+    wclrtobot(game_win);
+    box_(game_win, 0, 0);
+    for snake_cell in snake.iter() {
         let (snake_l, snake_c): (i32, i32) = snake_cell.posyx();
-        mvwaddstr(game_win, snake_l, snake_c, "x");
+        mvwaddstr(game_win, snake_l, snake_c, "o");
     }
+    wrefresh(game_win);
 }
 
 pub fn draw_board(board: &Board, game_win: WINDOW) {
     let (food_l, food_c): (i32, i32) = board.food_posyx();
     mvwaddstr(game_win, food_l, food_c, "F");
+}
+
+pub fn log(snake: &Snake, board: &Board) {
+    let (shl, shc): (i32, i32) = snake.posyx();
+    let (bfl, bfc): (i32, i32) = board.food_posyx();
+    mvwaddstr(stdscr(), 0, 0, &format!("snake:head: {} {} ", shl, shc));
+    mvwaddstr(stdscr(), 1, 0, &format!("board:food: {} {} ", bfl, bfc));
+    wmove(stdscr(), 2, 0);
+    for snake_cell in snake.iter() {
+        let (scl, scc): (i32, i32) = snake_cell.posyx();
+        waddstr(stdscr(), &format!("cell: {} {} ", scl, scc));
+    }
+    // mvwaddstr(
+    //     stdscr(),
+    //     2,
+    //     0,
+    //     &format!("snake_size {}", snake.iter().size_hint().0),
+    // );
+    if snake.grow {
+        mvwaddstr(stdscr(), 3, 0, &format!("snake:grew"));
+    }
+    wrefresh(stdscr());
 }
