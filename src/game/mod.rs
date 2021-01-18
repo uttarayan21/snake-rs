@@ -19,7 +19,7 @@ pub fn start() {
     loop {
         frontend::draw_snake(&snake, game_win);
         frontend::draw_board(&board, game_win);
-        frontend::log(&snake, &board);
+        // frontend::_log(&snake, &board);
         if board.check_collision(&snake) {
             break;
         }
@@ -50,9 +50,8 @@ pub fn start() {
                 nodelay(game_win, true);
             }
             // 27 => break,
-            _ => (),
+            _ => snake.tick(std::time::Duration::from_millis(100)),
         }
-        snake.tick(std::time::Duration::from_millis(100));
     }
 
     frontend::destroy_window(game_win);

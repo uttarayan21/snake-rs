@@ -125,10 +125,10 @@ impl Board {
     }
     pub fn check_collision(&mut self, snake: &Snake) -> bool {
         let (snake_line, snake_col): (i32, i32) = snake.posyx();
-        if (snake_line >= self.maxlines)
-            || (snake_col >= self.maxcols)
-            || (snake_line < 0)
-            || (snake_col < 0)
+        if (snake_line >= self.maxlines - 1)
+            || (snake_col >= self.maxcols - 1)
+            || (snake_line <= 0)
+            || (snake_col <= 0)
         {
             self.gamestate = GameState::Failed(FailState::Wall);
             return true;

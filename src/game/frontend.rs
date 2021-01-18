@@ -1,8 +1,7 @@
 // use ncurses::*;
 use crate::game::backend::{Board, Snake};
 use ncurses::{
-    box_, delwin, keypad, mvwaddstr, newwin, stdscr, waddstr, wborder, wclrtobot, wmove, wrefresh,
-    WINDOW,
+    box_, delwin, keypad, mvwaddstr, newwin, stdscr, wborder, wclrtobot, wmove, wrefresh, WINDOW,
 };
 pub fn game_window(mlines: i32, mcols: i32, vmargin: i32, hmargin: i32) -> WINDOW {
     let game_win: WINDOW;
@@ -46,12 +45,21 @@ pub fn draw_board(board: &Board, game_win: WINDOW) {
     mvwaddstr(game_win, food_l, food_c, "F");
 }
 
-pub fn log(snake: &Snake, board: &Board) {
+pub fn _log(snake: &Snake, board: &Board) {
     let (shl, shc): (i32, i32) = snake.posyx();
     let (bfl, bfc): (i32, i32) = board.food_posyx();
     mvwaddstr(stdscr(), 0, 0, &format!("snake:head: {} {} ", shl, shc));
     mvwaddstr(stdscr(), 1, 0, &format!("board:food: {} {} ", bfl, bfc));
-    wmove(stdscr(), 2, 0);
+    // mvwaddstr(
+    //     stdscr(),
+    //     2,
+    //     0,
+    //     &format!(
+    //         "board:maxlines {} maxcols {}",
+    //         board.maxlines, board.maxcols
+    //     ),
+    // );
+
     // for snake_cell in snake.iter() {
     //     let (scl, scc): (i32, i32) = snake_cell.posyx();
     //     waddstr(stdscr(), &format!("cell: {} {} ", scl, scc));
