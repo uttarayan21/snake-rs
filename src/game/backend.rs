@@ -69,8 +69,8 @@ impl Cell {
     pub fn random(lines: i32, cols: i32) -> Cell {
         let mut rng = rand::thread_rng();
         Cell::new(
-            rng.gen_range(1..lines),
-            rng.gen_range(1..cols),
+            rng.gen_range(1..lines - 1),
+            rng.gen_range(1..cols - 1),
             CellType::Food,
         )
     }
@@ -97,7 +97,7 @@ impl Clone for Cell {
 
 enum FailState {
     Wall,
-    // Body,
+    Snake,
 }
 
 enum GameState {
@@ -132,6 +132,14 @@ impl Board {
         {
             self.gamestate = GameState::Failed(FailState::Wall);
             return true;
+        }
+        let mut snake_iter = snake.iter();
+        snake_iter.next();
+        for snake_cell in snake_iter {
+            if snake.posyx() == snake_cell.posyx() {
+                self.gamestate = GameState::Failed(FailState::Snake);
+                return true;
+            }
         }
         return false;
     }
@@ -176,6 +184,7 @@ pub struct Snake {
     body: LinkedList<Cell>,
     direction: Direction,
     grow: bool,
+    speed: i32,
 }
 impl Snake {
     pub fn new(head: Cell) -> Snake {
@@ -187,6 +196,7 @@ impl Snake {
             // length: 1,
             direction: Direction::Right,
             grow: false,
+            speed: 15,
         }
     }
     pub fn posyx(&self) -> (i32, i32) {
@@ -217,8 +227,12 @@ impl Snake {
         self.body.push_front(self.head);
         self.grow = false;
     }
-    pub fn tick(&mut self, time: Duration) {
-        sleep(time);
+    pub fn tick(&mut self) {
+        // sleep(time);
+        // let time: std::time::Duration =
+        //     std::time::Duration::from_millis((1000 / self.speed) as u64);
+        // sleep(time);
+        sleep(Duration::from_millis((1000 / self.speed) as u64));
         self.smove(self.direction);
     }
     pub fn grow(&mut self) {

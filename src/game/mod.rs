@@ -12,8 +12,13 @@ pub fn start() {
     let mut ch: i32;
     let (vmargin, hmargin): (i32, i32) = (5, 10);
     getmaxyx(stdscr(), &mut mlines, &mut mcols);
+
     game_win = frontend::game_window(mlines, mcols, vmargin, hmargin);
-    let mut snake = Snake::new(Cell::new(mlines / 2, mcols / 2, backend::CellType::Snake)); //Initialise snake in the middle of the screen
+    let mut snake = Snake::new(Cell::new(
+        mlines / 2 - vmargin,
+        mcols / 2 - hmargin,
+        backend::CellType::Snake,
+    )); //Initialise snake in the middle of the screen
     let mut board = Board::new(mlines - vmargin * 2, mcols - hmargin * 2);
     nodelay(game_win, true);
     loop {
@@ -21,6 +26,8 @@ pub fn start() {
         frontend::draw_board(&board, game_win);
         // frontend::_log(&snake, &board);
         if board.check_collision(&snake) {
+            // Add stuff here to show the score and
+            // how You lose screen
             break;
         }
         if board.check_food(&snake) {
@@ -50,7 +57,7 @@ pub fn start() {
                 nodelay(game_win, true);
             }
             // 27 => break,
-            _ => snake.tick(std::time::Duration::from_millis(100)),
+            _ => snake.tick(),
         }
     }
 
