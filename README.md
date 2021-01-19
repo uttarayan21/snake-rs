@@ -18,7 +18,7 @@ esc or p to pause
 
 Click the image for asciinema
 
-[![snake](images/screenshot.png =650x)](https://asciinema.org/a/PtMG7dghPAEZ7tNgx70sKplKq?autoplay=1)
+[!<img src="images/screenshot.png" width="650" />](https://asciinema.org/a/PtMG7dghPAEZ7tNgx70sKplKq?autoplay=1)
 
 #### Todo :construction:
 
