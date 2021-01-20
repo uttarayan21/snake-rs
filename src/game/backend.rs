@@ -2,6 +2,7 @@ extern crate rand;
 use core::iter::Iterator;
 use rand::Rng;
 use std::collections::LinkedList;
+use std::ops::Sub;
 use std::thread::sleep;
 use std::time::Duration;
 pub enum Direction {
@@ -58,6 +59,12 @@ impl PartialEq for Cell {
         }
     }
 }
+impl Sub for Cell {
+    type Output = (i32, i32);
+    fn sub(self, rhs: Cell) -> (i32, i32) {
+        return (self.line - rhs.line, self.col - rhs.col);
+    }
+}
 impl Cell {
     pub fn new(l: i32, c: i32, t: CellType) -> Cell {
         Cell {
@@ -79,6 +86,15 @@ impl Cell {
     }
     pub fn chtype(&mut self, ctype: CellType) {
         self.ctype = ctype;
+    }
+    pub fn is_adjacent(&self, other: &Cell) -> Option<Direction> {
+        match *self - *other {
+            (0, 1) => Some(Direction::Left),
+            (1, 0) => Some(Direction::Down),
+            (-1, 0) => Some(Direction::Right),
+            (0, -1) => Some(Direction::Up),
+            _ => None,
+        }
     }
 }
 
@@ -136,6 +152,7 @@ impl Board {
         let mut snake_iter = snake.iter();
         snake_iter.next();
         for snake_cell in snake_iter {
+            // O(n) ; don't know how to reduce this complexity
             if snake.posyx() == snake_cell.posyx() {
                 self.gamestate = GameState::Failed(FailState::Snake);
                 return true;
@@ -167,6 +184,7 @@ impl Board {
             let mut snake_iter = snake.iter();
             for snake_cell in snake_iter.next() {
                 if *snake_cell == food {
+                    // O(n) ; I think this is nessacary/ I don't know how to reduce the order
                     // if food collides with the snake body then set food to a new random position and set spawned food to false
                     // so that the snake_iter is started again from the front of the snake
                     food = Cell::random(self.maxlines, self.maxcols);

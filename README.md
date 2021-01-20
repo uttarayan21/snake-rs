@@ -39,3 +39,22 @@ Click the image for asciinema
 #### Maybe in the future
 
 - [ ] Autoplay the game using a simple pathfinding algorithm (to show on [r/unixporn](https://reddit.com/r/unixporn) of course :clown_face:)
+
+#### Notes
+
+A few notes about the complexity of the game and how I should improve the game
+
+<details>
+<summary>Read More</summary>
+
+The complexity of the program is O(n) every tick (time which changes relative to the speed)
+
+However the place, I can improve is the redrawing of the game
+
+As of commit
+<a href="https://github.com/uttarayan21/snake/commit/de66f7d249a56f883dd632598a4178b1bd1320ba">f9be68e</a>
+the game redraws the total board and the total snake every tick.
+
+I think this can be improved by only drawing the parts of the snake and the board when needed
+
+</details>

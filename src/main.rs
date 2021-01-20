@@ -17,6 +17,10 @@ fn main() {
     noecho();
     let (mut mlines, mut mcols): (i32, i32) = (0, 0);
     getmaxyx(stdscr(), &mut mlines, &mut mcols);
+    // let (mlines, mcols) = match getmaxyx(stdscr()) {
+    //     Ok(size) => (size.lines, size.columns),
+    //     Err(e) => panic!(e),
+    // };
     if (mlines < 20) || (mcols < 35) {
         refresh();
         endwin();
