@@ -5,6 +5,7 @@ use std::collections::LinkedList;
 use std::ops::Sub;
 use std::thread::sleep;
 use std::time::Duration;
+#[derive(Debug)]
 pub enum Direction {
     Up,
     Down,
@@ -39,6 +40,20 @@ impl Direction {
         }
     }
 }
+#[derive(Debug)]
+// impl std::fmt::Debug for Direction {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//         // write!(f,)
+//         write!(
+//             f,
+//             "{}",
+//             match *self {
+//                 Self::Up => (),
+//                 _ => (),
+//             }
+//         );
+//     }
+// }
 
 pub enum CellType {
     Food,
@@ -89,10 +104,10 @@ impl Cell {
     }
     pub fn is_adjacent(&self, other: &Cell) -> Option<Direction> {
         match *self - *other {
-            (0, 1) => Some(Direction::Left),
+            (0, 1) => Some(Direction::Right),
             (1, 0) => Some(Direction::Down),
-            (-1, 0) => Some(Direction::Right),
-            (0, -1) => Some(Direction::Up),
+            (-1, 0) => Some(Direction::Up),
+            (0, -1) => Some(Direction::Left),
             _ => None,
         }
     }
