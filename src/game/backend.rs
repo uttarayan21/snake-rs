@@ -61,8 +61,8 @@ pub enum CellType {
     Empty,
 }
 pub struct Cell {
-    line: i32,
-    col: i32,
+    line: u32,
+    col: u32,
     ctype: CellType,
 }
 impl PartialEq for Cell {
@@ -77,27 +77,36 @@ impl PartialEq for Cell {
 impl Sub for Cell {
     type Output = (i32, i32);
     fn sub(self, rhs: Cell) -> (i32, i32) {
-        return (self.line - rhs.line, self.col - rhs.col);
+        return (
+            self.line as i32 - rhs.line as i32,
+            self.col as i32 - rhs.col as i32,
+        );
     }
 }
 impl Cell {
-    pub fn new(l: i32, c: i32, t: CellType) -> Cell {
+    pub fn new(l: u32, c: u32, t: CellType) -> Cell {
         Cell {
             line: l,
             col: c,
             ctype: t,
         }
     }
-    pub fn random(lines: i32, cols: i32) -> Cell {
+    pub fn random(lines: u32, cols: u32) -> Cell {
         let mut rng = rand::thread_rng();
         Cell::new(
-            rng.gen_range(1..lines - 1),
-            rng.gen_range(1..cols - 1),
+            rng.gen_range(1..lines - 1) as u32,
+            rng.gen_range(1..cols - 1) as u32,
             CellType::Food,
         )
     }
-    pub fn posyx(&self) -> (i32, i32) {
+    pub fn posyx(&self) -> (u32, u32) {
         return (self.line, self.col);
+    }
+    pub fn posy(&self) -> u32 {
+        return self.line;
+    }
+    pub fn posx(&self) -> u32 {
+        return self.col;
     }
     pub fn chtype(&mut self, ctype: CellType) {
         self.ctype = ctype;
@@ -138,15 +147,15 @@ enum GameState {
 }
 
 pub struct Board {
-    maxlines: i32,
-    maxcols: i32,
+    maxlines: u32,
+    maxcols: u32,
     gamestate: GameState,
     food: Cell,
 }
 
 // impl Board<'_> {
 impl Board {
-    pub fn new(maxlines: i32, maxcols: i32) -> Board {
+    pub fn new(maxlines: u32, maxcols: u32) -> Board {
         Board {
             maxlines,
             maxcols,
@@ -155,7 +164,7 @@ impl Board {
         }
     }
     pub fn check_collision(&mut self, snake: &Snake) -> bool {
-        let (snake_line, snake_col): (i32, i32) = snake.posyx();
+        let (snake_line, snake_col): (u32, u32) = snake.posyx();
         if (snake_line >= self.maxlines - 1)
             || (snake_col >= self.maxcols - 1)
             || (snake_line <= 0)
@@ -182,9 +191,12 @@ impl Board {
             return false;
         }
     }
-    pub fn food_posyx(&self) -> (i32, i32) {
+    pub fn food_posyx(&self) -> (u32, u32) {
         return self.food.posyx();
     }
+    // pub fn food_posy(&self) -> u32 {
+    //     return self.food.line;
+    // }
     pub fn eat_food(&mut self, snake: &mut Snake) {
         snake.grow();
         // self.food.chtype(CellType::Empty);
@@ -217,7 +229,8 @@ pub struct Snake {
     body: LinkedList<Cell>,
     direction: Direction,
     grow: bool,
-    speed: i32,
+    speed: u32,
+    last_tail: Option<Cell>,
 }
 impl Snake {
     pub fn new(head: Cell) -> Snake {
@@ -230,14 +243,14 @@ impl Snake {
             direction: Direction::Right,
             grow: false,
             speed: 15,
+            last_tail: Some(head),
         }
     }
-    pub fn posyx(&self) -> (i32, i32) {
+    pub fn posyx(&self) -> (u32, u32) {
         return (self.head.line, self.head.col);
     }
     pub fn smove(&mut self, _direction: Direction) {
         // smove because move is already a keyword
-        let mut tail: Cell;
         let direction: Direction;
         if self.direction == _direction.opposite() {
             direction = self.direction
@@ -245,18 +258,22 @@ impl Snake {
             direction = _direction
         }
         if self.grow == false {
-            tail = self.body.pop_back().unwrap();
-            tail.chtype(CellType::Empty);
+            self.last_tail = Some(self.body.pop_back().unwrap());
+
             // self.grow = false;
         }
-        let (dl, dc) = match direction {
+        let (dl, dc): (i32, i32) = match direction {
             Direction::Up => (-1, 0),
             Direction::Down => (1, 0),
             Direction::Left => (0, -1),
             Direction::Right => (0, 1),
         };
         self.direction = direction;
-        self.head = Cell::new(self.head.line + dl, self.head.col + dc, CellType::Snake);
+        self.head = Cell::new(
+            ((self.head.line as i32) + dl) as u32,
+            ((self.head.col as i32) + dc) as u32,
+            CellType::Snake,
+        );
         self.body.push_front(self.head);
         self.grow = false;
     }
@@ -273,5 +290,11 @@ impl Snake {
     }
     pub fn iter(&self) -> impl Iterator<Item = &Cell> {
         return self.body.iter();
+    }
+    pub fn remove(&self) -> Option<Cell> {
+        return self.last_tail;
+    }
+    pub fn set_speed(&mut self, speed: u32) {
+        self.speed = speed;
     }
 }

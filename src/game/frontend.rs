@@ -4,15 +4,15 @@ use ncurses::{
     box_, delwin, keypad, mvwaddstr, newwin, stdscr, waddstr, wborder, wclrtobot, wmove, wrefresh,
     WINDOW,
 };
-pub fn game_window(mlines: i32, mcols: i32, vmargin: i32, hmargin: i32) -> WINDOW {
+pub fn game_window(mlines: u32, mcols: u32, vmargin: u32, hmargin: u32) -> WINDOW {
     let game_win: WINDOW;
-    let (lines, cols): (i32, i32);
-    let (starty, startx): (i32, i32);
+    let (lines, cols): (u32, u32);
+    let (starty, startx): (u32, u32);
     lines = mlines - vmargin * 2;
     cols = mcols - hmargin * 2;
     starty = vmargin;
     startx = hmargin;
-    game_win = newwin(lines, cols, starty, startx);
+    game_win = newwin(lines as i32, cols as i32, starty as i32, startx as i32);
     box_(game_win, 0, 0);
     keypad(game_win, true);
     wrefresh(game_win);
@@ -32,7 +32,7 @@ pub fn draw_snake(snake: &Snake, game_win: WINDOW) {
     let (mut prev, mut current, _next): (&Cell, &Cell, &Cell);
     let mut snake_iter = snake.iter();
     wmove(game_win, 0, 0);
-    wclrtobot(game_win);
+    // wclrtobot(game_win);
     box_(game_win, 0, 0);
 
     // I want to draw the snake as ascii box charachters
@@ -41,10 +41,16 @@ pub fn draw_snake(snake: &Snake, game_win: WINDOW) {
     prev = snake_iter.next().unwrap(); // currently this should be head. On initial run this should be the only snake_cell
     mvwaddstr(
         game_win,
-        prev.posyx().0,
-        prev.posyx().1,
+        prev.posy() as i32,
+        prev.posx() as i32,
         &format!("{}", std::char::from_u32(0x0298).unwrap_or('O')),
     );
+    match snake.remove() {
+        Some(tail) => {
+            mvwaddstr(game_win, tail.posy() as i32, tail.posx() as i32, " ");
+        }
+        None => (),
+    }
     let _current = snake_iter.next();
     current = match _current {
         Some(cell) => cell,
@@ -52,7 +58,7 @@ pub fn draw_snake(snake: &Snake, game_win: WINDOW) {
     };
     for next in snake_iter {
         // O(n) the whole snake is redrawn every single tick
-        let (snake_l, snake_c): (i32, i32) = current.posyx();
+        let (snake_l, snake_c): (u32, u32) = current.posyx();
         // mvwaddstr(game_win, snake_l, snake_c, "o");
         let snake_char: u32 = match (
             prev.is_adjacent(current).unwrap(),
@@ -68,8 +74,8 @@ pub fn draw_snake(snake: &Snake, game_win: WINDOW) {
         };
         mvwaddstr(
             game_win,
-            snake_l,
-            snake_c,
+            snake_l as i32,
+            snake_c as i32,
             &format!("{}", std::char::from_u32(snake_char).unwrap_or('o')),
         );
         prev = current;
@@ -78,8 +84,8 @@ pub fn draw_snake(snake: &Snake, game_win: WINDOW) {
 
     mvwaddstr(
         game_win,
-        current.posyx().0,
-        current.posyx().1,
+        current.posy() as i32,
+        current.posx() as i32,
         &format!(
             "{}",
             std::char::from_u32(match current.is_adjacent(prev).unwrap() {
@@ -93,22 +99,22 @@ pub fn draw_snake(snake: &Snake, game_win: WINDOW) {
 }
 
 pub fn draw_board(board: &Board, game_win: WINDOW) {
-    let (food_l, food_c): (i32, i32) = board.food_posyx();
+    let (food_l, food_c): (u32, u32) = board.food_posyx();
     mvwaddstr(
         game_win,
-        food_l,
-        food_c,
+        food_l as i32,
+        food_c as i32,
         &format!("{}", std::char::from_u32(0x0298).unwrap_or('F')),
     );
 }
 
-pub fn _log(snake: &Snake, board: &Board) {
-    let (shl, shc): (i32, i32) = snake.posyx();
-    let (bfl, bfc): (i32, i32) = board.food_posyx();
+pub fn _log(_snake: &Snake, _board: &Board) {
+    let (shl, shc): (u32, u32) = _snake.posyx();
+    let (stl, stc): (u32, u32) = _snake.remove().unwrap().posyx();
     mvwaddstr(stdscr(), 0, 0, &format!("snake:head: {} {} ", shl, shc));
-    mvwaddstr(stdscr(), 1, 0, &format!("board:food: {} {} ", bfl, bfc));
+    mvwaddstr(stdscr(), 1, 0, &format!("snake:tail: {} {} ", stl, stc));
     wmove(stdscr(), 2, 0);
-    for snake_cell in snake.iter() {
+    for snake_cell in _snake.iter() {
         waddstr(
             stdscr(),
             &format!(

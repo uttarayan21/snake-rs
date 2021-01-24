@@ -10,21 +10,21 @@ pub fn start() {
     let (mut mlines, mut mcols): (i32, i32) = (0, 0);
     let game_win: WINDOW;
     let mut ch: i32;
-    let (vmargin, hmargin): (i32, i32) = (5, 10);
+    let (vmargin, hmargin): (u32, u32) = (5, 10);
     getmaxyx(stdscr(), &mut mlines, &mut mcols);
 
-    game_win = frontend::game_window(mlines, mcols, vmargin, hmargin);
+    game_win = frontend::game_window(mlines as u32, mcols as u32, vmargin, hmargin);
     let mut snake = Snake::new(Cell::new(
-        mlines / 2 - vmargin,
-        mcols / 2 - hmargin,
+        mlines as u32 / 2 - vmargin,
+        mcols as u32 / 2 - hmargin,
         backend::CellType::Snake,
     )); //Initialise snake in the middle of the screen
-    let mut board = Board::new(mlines - vmargin * 2, mcols - hmargin * 2);
+    let mut board = Board::new(mlines as u32 - vmargin * 2, mcols as u32 - hmargin * 2);
     nodelay(game_win, true);
     loop {
         frontend::draw_snake(&snake, game_win); // always draw snake before board because the snake will clear the game win
         frontend::draw_board(&board, game_win);
-        // frontend::_log(&snake, &board);
+        frontend::_log(&snake, &board);
         if board.check_collision(&snake) {
             // Add stuff here to show the score and
             // how You lose screen
@@ -46,9 +46,12 @@ pub fn start() {
                     //112 is keycode for 'p'
                     0 => (), //resume
                     1 => {
-                        snake =
-                            Snake::new(Cell::new(mlines / 2, mcols / 2, backend::CellType::Snake)); //Initialise snake in the middle of the screen
-                        board = Board::new(mlines - vmargin * 2, mcols - hmargin * 2);
+                        snake = Snake::new(Cell::new(
+                            mlines as u32 / 2,
+                            mcols as u32 / 2,
+                            backend::CellType::Snake,
+                        )); //Initialise snake in the middle of the screen
+                        board = Board::new(mlines as u32 - vmargin * 2, mcols as u32 - hmargin * 2);
                     } //restart
                     2 => break, //exit
                     _ => (), //other charachters just in case

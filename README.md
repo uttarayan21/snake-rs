@@ -79,9 +79,10 @@ A few notes about the game and how I should improve the game
 
 <summary>Rust specific stuff I learned</summary>
 
-> [char](https://doc.rust-lang.org/stable/std/primitive.char.html) and [std::char](https://doc.rust-lang.org/stable/std/char/index.html) are different
+> [char](https://doc.rust-lang.org/stable/std/primitive.char.html) and [std::char](https://doc.rust-lang.org/stable/std/char/index.html) are not the same.
+> [char](https://doc.rust-lang.org/stable/std/primitive.char.html) is the primitive type [std::char](https://doc.rust-lang.org/stable/std/char/index.html) is the char module.
 
-> [char](https://doc.rust-lang.org/stable/std/primitive.char.html) is the primitive type [std::char](https://doc.rust-lang.org/stable/std/char/index.html) is the char module. All the functions are not completely same for both (as of rust v1.49.0)
+> As of Sat, 23 Jan 2021 21:49:13 +0000 the char::from_u32 (used in this program) is not valid in primitive [char](https://doc.rust-lang.org/stable/std/primitive.char.html) but is valid in [std::char](https://doc.rust-lang.org/stable/std/char/index.html)
 
 > [ncursesw](httsp://docs.rs/ncursesw) is not needed to print unicode characters. I have no clue where I got that idea from.
 
