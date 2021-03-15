@@ -1,32 +1,43 @@
 extern crate rand;
+use crate::settings::Config;
 use core::iter::Iterator;
 use rand::Rng;
+use serde::{Deserialize, Serialize};
 use std::collections::LinkedList;
 use std::ops::Sub;
 use std::thread::sleep;
 use std::time::Duration;
-#[derive(Debug)]
+
+#[derive(Serialize, Deserialize, Clone, Copy)]
+#[serde(tag = "type", content = "value")]
+pub enum Difficulty {
+    Linear(f32),
+    Flat,
+}
+
+#[derive(Debug, Clone, Copy)]
 pub enum Direction {
     Up,
     Down,
     Left,
     Right,
 }
-impl Copy for Direction {}
-impl Clone for Direction {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
 impl PartialEq for Direction {
     fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (&Self::Up, &Self::Up) => true,
-            (&Self::Down, &Self::Down) => true,
-            (&Self::Left, &Self::Left) => true,
-            (&Self::Right, &Self::Right) => true,
-            _ => false,
-        }
+        // match (self, other) {
+        //     (&Self::Up, &Self::Up) => true,
+        //     (&Self::Down, &Self::Down) => true,
+        //     (&Self::Left, &Self::Left) => true,
+        //     (&Self::Right, &Self::Right) => true,
+        //     _ => false,
+        // }
+        matches!(
+            (self, other),
+            (&Self::Up, &Self::Up)
+                | (&Self::Down, &Self::Down)
+                | (&Self::Left, &Self::Left)
+                | (&Self::Right, &Self::Right)
+        )
     }
 }
 
@@ -41,46 +52,29 @@ impl Direction {
     }
 }
 #[derive(Debug)]
-// impl std::fmt::Debug for Direction {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         // write!(f,)
-//         write!(
-//             f,
-//             "{}",
-//             match *self {
-//                 Self::Up => (),
-//                 _ => (),
-//             }
-//         );
-//     }
-// }
-
 pub enum CellType {
     Food,
     Snake,
-    Empty,
+    // Empty,
 }
+#[derive(Debug)]
 pub struct Cell {
     line: u32,
     col: u32,
-    ctype: CellType,
+    _ctype: CellType,
 }
 impl PartialEq for Cell {
     fn eq(&self, other: &Cell) -> bool {
-        if (self.line == other.line) && (self.col == other.col) {
-            return true;
-        } else {
-            return false;
-        }
+        (self.line == other.line) && (self.col == other.col)
     }
 }
 impl Sub for Cell {
     type Output = (i32, i32);
     fn sub(self, rhs: Cell) -> (i32, i32) {
-        return (
+        (
             self.line as i32 - rhs.line as i32,
             self.col as i32 - rhs.col as i32,
-        );
+        )
     }
 }
 impl Cell {
@@ -88,7 +82,7 @@ impl Cell {
         Cell {
             line: l,
             col: c,
-            ctype: t,
+            _ctype: t,
         }
     }
     pub fn random(lines: u32, cols: u32) -> Cell {
@@ -100,16 +94,16 @@ impl Cell {
         )
     }
     pub fn posyx(&self) -> (u32, u32) {
-        return (self.line, self.col);
+        (self.line, self.col)
     }
     pub fn posy(&self) -> u32 {
-        return self.line;
+        self.line
     }
     pub fn posx(&self) -> u32 {
-        return self.col;
+        self.col
     }
-    pub fn chtype(&mut self, ctype: CellType) {
-        self.ctype = ctype;
+    pub fn _chtype(&mut self, ctype: CellType) {
+        self._ctype = ctype;
     }
     pub fn is_adjacent(&self, other: &Cell) -> Option<Direction> {
         match *self - *other {
@@ -135,17 +129,20 @@ impl Clone for Cell {
     }
 }
 
+#[derive(Debug)]
 enum FailState {
     Wall,
     Snake,
 }
 
+#[derive(Debug)]
 enum GameState {
     Failed(FailState),
     Ready,
     // Playing,
 }
 
+#[derive(Debug)]
 pub struct Board {
     maxlines: u32,
     maxcols: u32,
@@ -165,10 +162,9 @@ impl Board {
     }
     pub fn check_collision(&mut self, snake: &Snake) -> bool {
         let (snake_line, snake_col): (u32, u32) = snake.posyx();
-        if (snake_line >= self.maxlines - 1)
-            || (snake_col >= self.maxcols - 1)
-            || (snake_line <= 0)
-            || (snake_col <= 0)
+        if (snake_line >= self.maxlines - 1) || (snake_col >= self.maxcols - 1)
+        // || (snake_line <= 0)
+        // || (snake_col <= 0)
         {
             self.gamestate = GameState::Failed(FailState::Wall);
             return true;
@@ -182,17 +178,13 @@ impl Board {
                 return true;
             }
         }
-        return false;
+        false
     }
     pub fn check_food(&self, snake: &Snake) -> bool {
-        if self.food_posyx() == snake.posyx() {
-            return true;
-        } else {
-            return false;
-        }
+        self.food_posyx() == snake.posyx()
     }
     pub fn food_posyx(&self) -> (u32, u32) {
-        return self.food.posyx();
+        self.food.posyx()
     }
     // pub fn food_posy(&self) -> u32 {
     //     return self.food.line;
@@ -205,11 +197,11 @@ impl Board {
     pub fn spawn_food(&mut self, snake: &Snake) {
         let mut food: Cell = Cell::random(self.maxlines, self.maxcols);
         let mut spawned_food = false;
-        while spawned_food != true {
+        while !spawned_food {
             // check for colliosions with the snake body until a free spot is found and spawn the food there
             spawned_food = true;
-            let mut snake_iter = snake.iter();
-            for snake_cell in snake_iter.next() {
+            let snake_iter = snake.iter();
+            for snake_cell in snake_iter {
                 if *snake_cell == food {
                     // O(n) ; I think this is nessacary/ I don't know how to reduce the order
                     // if food collides with the snake body then set food to a new random position and set spawned food to false
@@ -228,26 +220,27 @@ pub struct Snake {
     head: Cell,
     body: LinkedList<Cell>,
     direction: Direction,
+    difficulty: Difficulty,
     grow: bool,
     speed: u32,
     last_tail: Option<Cell>,
 }
 impl Snake {
-    pub fn new(head: Cell) -> Snake {
+    pub fn new(head: Cell, config: &Config) -> Snake {
         let mut temp_body: LinkedList<Cell> = LinkedList::new();
         temp_body.push_front(head);
         Snake {
             head,
             body: temp_body,
-            // length: 1,
+            difficulty: config.difficulty,
             direction: Direction::Right,
-            grow: false,
-            speed: 15,
+            grow: true,
+            speed: config.speed,
             last_tail: Some(head),
         }
     }
     pub fn posyx(&self) -> (u32, u32) {
-        return (self.head.line, self.head.col);
+        (self.head.line, self.head.col)
     }
     pub fn smove(&mut self, _direction: Direction) {
         // smove because move is already a keyword
@@ -257,7 +250,7 @@ impl Snake {
         } else {
             direction = _direction
         }
-        if self.grow == false {
+        if !self.grow {
             self.last_tail = Some(self.body.pop_back().unwrap());
 
             // self.grow = false;
@@ -285,16 +278,20 @@ impl Snake {
         sleep(Duration::from_millis((1000 / self.speed) as u64));
         self.smove(self.direction);
     }
+    pub fn scale_difficulty(&mut self) {
+        match self.difficulty {
+            Difficulty::Flat => (),
+            Difficulty::Linear(scale) => self.speed = (self.speed as f32 * scale) as u32,
+        }
+    }
     pub fn grow(&mut self) {
+        self.scale_difficulty();
         self.grow = true;
     }
     pub fn iter(&self) -> impl Iterator<Item = &Cell> {
-        return self.body.iter();
+        self.body.iter()
     }
     pub fn remove(&self) -> Option<Cell> {
-        return self.last_tail;
-    }
-    pub fn set_speed(&mut self, speed: u32) {
-        self.speed = speed;
+        self.last_tail
     }
 }

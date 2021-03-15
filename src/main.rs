@@ -2,6 +2,7 @@ extern crate ncurses;
 mod game;
 mod highscore;
 mod menu;
+mod settings;
 // use game::{Cell, Snake};
 // use ncurses::*;
 use ncurses::{
@@ -12,6 +13,7 @@ use ncurses::{
 fn main() {
     // let (lines, cols): (i32, i32) = (0, 0);
     setlocale(LcCategory::all, "");
+    let config = settings::Config::new().unwrap();
     initscr();
     raw();
     keypad(stdscr(), true);
@@ -27,11 +29,12 @@ fn main() {
     }
     loop {
         match menu::main_menu_control() {
-            0 => game::start(),
+            0 => game::start(&config),
             1 => highscore::show(),
             _ => break,
         }
     }
     refresh();
     endwin();
+    config.write();
 }

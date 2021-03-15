@@ -1,24 +1,28 @@
 mod backend;
 mod frontend;
 use crate::menu;
+use crate::settings::Config;
 // use ncurses::*;
+pub use backend::Difficulty;
 use backend::{Board, Cell, Snake};
 use ncurses::{
     getmaxyx, nodelay, stdscr, wgetch, wrefresh, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_UP, WINDOW,
 };
-pub fn start() {
+pub fn start(config: &Config) {
     let (mut mlines, mut mcols): (i32, i32) = (0, 0);
     let game_win: WINDOW;
     let mut ch: i32;
     let (vmargin, hmargin): (u32, u32) = (5, 10);
     getmaxyx(stdscr(), &mut mlines, &mut mcols);
-
     game_win = frontend::game_window(mlines as u32, mcols as u32, vmargin, hmargin);
-    let mut snake = Snake::new(Cell::new(
-        mlines as u32 / 2 - vmargin,
-        mcols as u32 / 2 - hmargin,
-        backend::CellType::Snake,
-    )); //Initialise snake in the middle of the screen
+    let mut snake = Snake::new(
+        Cell::new(
+            mlines as u32 / 2 - vmargin,
+            mcols as u32 / 2 - hmargin,
+            backend::CellType::Snake,
+        ),
+        config,
+    ); //Initialise snake in the middle of the screen
     let mut board = Board::new(mlines as u32 - vmargin * 2, mcols as u32 - hmargin * 2);
     nodelay(game_win, true);
     loop {
@@ -46,15 +50,20 @@ pub fn start() {
                     //112 is keycode for 'p'
                     0 => (), //resume
                     1 => {
-                        snake = Snake::new(Cell::new(
-                            mlines as u32 / 2,
-                            mcols as u32 / 2,
-                            backend::CellType::Snake,
-                        )); //Initialise snake in the middle of the screen
-                        board = Board::new(mlines as u32 - vmargin * 2, mcols as u32 - hmargin * 2);
-                    } //restart
+                        snake = Snake::new(
+                            Cell::new(
+                                mlines as u32 / 2 - vmargin,
+                                mcols as u32 / 2 - hmargin,
+                                backend::CellType::Snake,
+                            ),
+                            config,
+                        ); //Initialise snake in the middle of the screen
+
+                        board = Board::new(mlines as u32 - vmargin * 2, mcols as u32 - hmargin * 2); //restart
+                        frontend::clear_window(game_win);
+                    }
                     2 => break, //exit
-                    _ => (), //other charachters just in case
+                    _ => (),    //other charachters just in case
                 }
                 wrefresh(game_win);
                 nodelay(game_win, true);

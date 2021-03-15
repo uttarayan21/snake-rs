@@ -27,6 +27,11 @@ pub fn destroy_window(win: WINDOW) {
     delwin(win); // delete the window
 }
 
+pub fn clear_window(win: WINDOW) {
+    wmove(win, 0, 0);
+    wclrtobot(win);
+}
+
 pub fn draw_snake(snake: &Snake, game_win: WINDOW) {
     // let mut snake_iter = snake.iter();
     let (mut prev, mut current, _next): (&Cell, &Cell, &Cell);
@@ -45,12 +50,10 @@ pub fn draw_snake(snake: &Snake, game_win: WINDOW) {
         prev.posx() as i32,
         &format!("{}", std::char::from_u32(0x0298).unwrap_or('O')),
     );
-    match snake.remove() {
-        Some(tail) => {
-            mvwaddstr(game_win, tail.posy() as i32, tail.posx() as i32, " ");
-        }
-        None => (),
+    if let Some(tail) = snake.remove() {
+        mvwaddstr(game_win, tail.posy() as i32, tail.posx() as i32, " ");
     }
+
     let _current = snake_iter.next();
     current = match _current {
         Some(cell) => cell,
