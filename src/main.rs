@@ -1,10 +1,11 @@
 extern crate ncurses;
+#[macro_use]
+extern crate derive_error;
 mod game;
 mod highscore;
 mod menu;
 mod settings;
 // use game::{Cell, Snake};
-// use ncurses::*;
 use ncurses::{
     curs_set, endwin, getmaxyx, initscr, keypad, noecho, raw, refresh, setlocale, stdscr,
     LcCategory, CURSOR_VISIBILITY,
@@ -36,5 +37,4 @@ fn main() {
     }
     refresh();
     endwin();
-    config.write();
 }

@@ -1,6 +1,6 @@
 [package]
 name = "snake"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["Uttarayan Mondal <uttarayan21@gmail.com>"]
 edition = "2018"
 
@@ -9,8 +9,7 @@ edition = "2018"
 [dependencies]
 ncurses = "5.100.0"
 serde = { version = "1.0.121", features = ["derive"] }
-# serde = "1.0.121"
-# serde_derive = "1.0.121"
-toml = "0.5.8"
+serde_yaml = "0.8.17"
 rand = "0.8.0"
 dirs = "3.0.1"
+derive-error = "0.0.5"

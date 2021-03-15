@@ -28,7 +28,7 @@ pub fn start(config: &Config) {
     loop {
         frontend::draw_snake(&snake, game_win); // always draw snake before board because the snake will clear the game win
         frontend::draw_board(&board, game_win);
-        frontend::_log(&snake, &board);
+        // frontend::_log(&snake, &board);
         if board.check_collision(&snake) {
             // Add stuff here to show the score and
             // how You lose screen

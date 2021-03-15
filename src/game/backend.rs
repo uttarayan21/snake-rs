@@ -8,10 +8,9 @@ use std::ops::Sub;
 use std::thread::sleep;
 use std::time::Duration;
 
-#[derive(Serialize, Deserialize, Clone, Copy)]
-#[serde(tag = "type", content = "value")]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum Difficulty {
-    Linear(f32),
+    Linear(u8),
     Flat,
 }
 
@@ -162,9 +161,10 @@ impl Board {
     }
     pub fn check_collision(&mut self, snake: &Snake) -> bool {
         let (snake_line, snake_col): (u32, u32) = snake.posyx();
-        if (snake_line >= self.maxlines - 1) || (snake_col >= self.maxcols - 1)
-        // || (snake_line <= 0)
-        // || (snake_col <= 0)
+        if (snake_line >= self.maxlines - 1)
+            || (snake_col >= self.maxcols - 1)
+            || (snake_line == 0)
+            || (snake_col == 0)
         {
             self.gamestate = GameState::Failed(FailState::Wall);
             return true;
@@ -222,7 +222,7 @@ pub struct Snake {
     direction: Direction,
     difficulty: Difficulty,
     grow: bool,
-    speed: u32,
+    speed: f32,
     last_tail: Option<Cell>,
 }
 impl Snake {
@@ -275,13 +275,13 @@ impl Snake {
         // let time: std::time::Duration =
         //     std::time::Duration::from_millis((1000 / self.speed) as u64);
         // sleep(time);
-        sleep(Duration::from_millis((1000 / self.speed) as u64));
+        sleep(Duration::from_millis(1000 / self.speed as u64));
         self.smove(self.direction);
     }
     pub fn scale_difficulty(&mut self) {
         match self.difficulty {
             Difficulty::Flat => (),
-            Difficulty::Linear(scale) => self.speed = (self.speed as f32 * scale) as u32,
+            Difficulty::Linear(scale) => self.speed *= scale as f32 / 256_f32 + 1_f32,
         }
     }
     pub fn grow(&mut self) {
